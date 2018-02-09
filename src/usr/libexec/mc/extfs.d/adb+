@@ -91,7 +91,7 @@ fi
 # Do not use "adb_cmd" here!
 # -n results in unknown UIDs and GIDs not to be mapped on user's values
 #"$ADB" shell "$BUSYBOX ls --color=never -aelR $DIR" \
-"$ADB" shell "$BUSYBOX ls --color=never -aelRn $DIR" \
+"$ADB" shell "$BUSYBOX ls -alRn $DIR" \
 | tr -d '\r' \
 | tee $DBG \
 | {
@@ -131,14 +131,19 @@ fi
           OWNER="${ITEMS[2]}"
           GROUP="${ITEMS[3]}"
           SIZE="${ITEMS[4]}"
+          YMD="${ITEMS[5]}"
 #          WDAY="${ITEMS[5]}"
-          MONTH="${ITEMS[6]}"
-          DAY="${ITEMS[7]}"
+#          MONTH="${ITEMS[6]}"
+#          DAY="${ITEMS[7]}"
 # get time at second precision
 #          TIME="${ITEMS[8]%:*}" # Strip last two digits: 00:00:00 -> 00:00
-          TIME="${ITEMS[8]}"
-          YEAR="${ITEMS[9]}"
-          FILE="${ITEMS[*]:10}"
+          TIME="${ITEMS[6]}"
+#          YEAR="${ITEMS[9]}"
+          FILE="${ITEMS[*]:7}"
+
+          YEAR=`echo "$YMD" | tr '-' '\t' | cut -f1`
+          MONTH=`echo "$YMD" | tr '-' '\t' | cut -f2`
+          DAY=`echo "$YMD" | tr '-' '\t' | cut -f3`
 
 # "cannot read link" errors may come in two lines:
 # ls: /proc/1/cwd: cannot read link: Permission denied
@@ -190,15 +195,20 @@ fi
           GROUP="${ITEMS[3]}"
           MAJOR="${ITEMS[4]%,}" # Strip trailing ","
           MINOR="${ITEMS[5]}"
+          YMD="${ITEMS[6]}"
 #          WDAY="${ITEMS[6]}"
-          MONTH="${ITEMS[7]}"
-          DAY="${ITEMS[8]}"
+#          MONTH="${ITEMS[7]}"
+#          DAY="${ITEMS[8]}"
 # get time at second precision
 #          TIME="${ITEMS[9]%:*}" # Strip last two digits: 00:00:00 -> 00:00
-          TIME="${ITEMS[9]}"
-          YEAR="${ITEMS[10]}"
-          FILE="${ITEMS[*]:11}"
+          TIME="${ITEMS[7]}"
+#          YEAR="${ITEMS[10]}"
+          FILE="${ITEMS[*]:8}"
 
+          YEAR=`echo "$YMD" | tr '-' '\t' | cut -f1`
+          MONTH=`echo "$YMD" | tr '-' '\t' | cut -f2`
+          DAY=`echo "$YMD" | tr '-' '\t' | cut -f3`
+          
           case "$DAY" in
             [0-9]) DAY="0$DAY" ;;
           esac
@@ -323,7 +333,7 @@ LC_ALL=C
 export LC_ALL
 
 ADB="${ADB:-`which adb`}"
-BUSYBOX="${BUSYBOX:-busybox}"
+BUSYBOX="${BUSYBOX:-toybox}"
 
 if [ -z "$ADB" ]; then
   echo "Error: could not find adb"
